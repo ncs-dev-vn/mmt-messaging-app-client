@@ -1,41 +1,216 @@
 import socket
 import threading
+import sys
 
 try:
-    from config import get_default_server_info, get_buffer_size
-    from utils import validate_nickname
+    from config import get_default_server_info, get_buffer_size, get_connection_timeout
+    from utils import validate_nickname, validate_message_content, validate_message_frequency
     CONFIG_AVAILABLE = True
 except ImportError:
     CONFIG_AVAILABLE = False
+    print("⚠️ Config module không khả dụng, sử dụng giá trị mặc định")
 
 class ChatClient:
-    def __init__(self, host=None, port=None):
-        self.host = host or '127.0.0.1'
-        self.port = port or 12345
-        self.buffer_size = 1024
+    def __init__(self, host=None, port=None, buffer_size=None):
+        # Sử dụng config system thay vì hard-code
+        if CONFIG_AVAILABLE:
+            default_host, default_port = get_default_server_info()
+            self.host = host or default_host
+            self.port = port or default_port
+            self.buffer_size = buffer_size or get_buffer_size()
+            self.timeout = get_connection_timeout()
+        else:
+            # Fallback khi không có config
+            self.host = host or '127.0.0.1'
+            self.port = port or 12345
+            self.buffer_size = buffer_size or 1024
+            self.timeout = 30
+            
         self.client_socket = None
         self.is_connected = False
+        self.nickname = ""
+        self.running = False
         
     def connect(self):
+        """Kết nối đến server với config system và timeout"""
         try:
+            print(f'🔗 Đang kết nối đến {self.host}:{self.port}...')
+            
             self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.client_socket.settimeout(self.timeout)
             self.client_socket.connect((self.host, self.port))
+            self.client_socket.settimeout(None)  # Reset về blocking mode
+            
             self.is_connected = True
-            print(f'Connected to {self.host}:{self.port}')
+            print(f'✅ Đã kết nối thành công với Server ({self.host}:{self.port})')
             return True
+            
+        except socket.timeout:
+            print(f'❌ Kết nối timeout sau {self.timeout} giây')
+            return False
+        except ConnectionRefusedError:
+            print(f'❌ Server từ chối kết nối. Kiểm tra server có đang chạy không?')
+            return False
         except Exception as e:
-            print(f'Connection failed: {e}')
+            print(f'❌ Lỗi kết nối: {e}')
+            return False
+    
+    def set_nickname(self):
+        """Nhập và validate nickname"""
+        while True:
+            try:
+                nickname = input("Nhập nickname của bạn: ").strip()
+                
+                if CONFIG_AVAILABLE:
+                    is_valid, message = validate_nickname(nickname)
+                    if not is_valid:
+                        print(f'❌ {message}')
+                        continue
+                else:
+                    # Basic validation khi không có config
+                    if not nickname or len(nickname) > 20:
+                        print('❌ Nickname không hợp lệ (1-20 ký tự)')
+                        continue
+                
+                # Gửi nickname đến server
+                self.client_socket.send(nickname.encode('utf-8'))
+                self.nickname = nickname
+                print(f'✅ Nickname "{nickname}" đã được đặt')
+                return True
+                
+            except KeyboardInterrupt:
+                print('\n👋 Đã hủy nhập nickname')
+                return False
+            except Exception as e:
+                print(f'❌ Lỗi khi đặt nickname: {e}')
+                return False
+    
+    def send_message(self, message):
+        """Gửi tin nhắn với content validation"""
+        if not message.strip():
             return False
             
-    def send_message(self, message):
-        if message.strip():
+        # Content moderation (nếu có)
+        if CONFIG_AVAILABLE:
+            try:
+                is_valid, filtered_msg, reason = validate_message_content(message)
+                if not is_valid:
+                    print(f'❌ {reason}')
+                    return False
+                if reason != "OK" and "Cảnh báo" in reason:
+                    print(f'⚠️ {reason}')
+                message = filtered_msg
+            except:
+                pass  # Fallback nếu content moderation lỗi
+        
+        try:
             self.client_socket.send(message.encode('utf-8'))
+            return True
+        except Exception as e:
+            print(f'❌ Không thể gửi tin nhắn: {e}')
+            self.is_connected = False
+            return False
             
+    def receive_messages(self):
+        """Nhận tin nhắn từ server (chạy trong thread)"""
+        while self.running and self.is_connected:
+            try:
+                data = self.client_socket.recv(self.buffer_size)
+                if not data:
+                    print('\n💔 Mất kết nối với server')
+                    self.is_connected = False
+                    break
+                    
+                message = data.decode('utf-8')
+                print(f'\n{message}')
+                
+            except socket.timeout:
+                continue  # Timeout bình thường
+            except Exception as e:
+                if self.running:  # Chỉ in lỗi nếu client vẫn đang chạy
+                    print(f'\n❌ Lỗi nhận tin nhắn: {e}')
+                break
+    
+    def start_chat(self):
+        """Bắt đầu chat session"""
+        if not self.is_connected:
+            print('❌ Chưa kết nối đến server')
+            return False
+            
+        if not self.set_nickname():
+            return False
+        
+        # Bắt đầu thread nhận tin nhắn
+        self.running = True
+        receive_thread = threading.Thread(target=self.receive_messages)
+        receive_thread.daemon = True
+        receive_thread.start()
+        
+        print('\n💬 Bạn có thể bắt đầu chat! Gõ "quit" để thoát.')
+        print('=' * 50)
+        
+        # Vòng lặp gửi tin nhắn
+        try:
+            while self.running and self.is_connected:
+                message = input().strip()
+                
+                if message.lower() in ['quit', 'exit']:
+                    break
+                elif message:
+                    success = self.send_message(message)
+                    if not success:
+                        break
+                        
+        except KeyboardInterrupt:
+            print('\n👋 Đang thoát...')
+        finally:
+            self.disconnect()
+        
+        return True
+    
+    def disconnect(self):
+        """Ngắt kết nối an toàn"""
+        self.running = False
+        self.is_connected = False
+        
+        if self.client_socket:
+            try:
+                self.client_socket.close()
+            except:
+                pass
+            self.client_socket = None
+        
+        print('👋 Đã ngắt kết nối')
+
 def main():
-    print("Simple Chat Client")
-    client = ChatClient()
-    if client.connect():
-        print("Connected successfully!")
+    """Entry point chính"""
+    print("=== Multi-User Chat Client ===")
+    
+    if CONFIG_AVAILABLE:
+        print("✅ Config system loaded")
+    else:
+        print("⚠️ Using default configuration")
+    
+    try:
+        # Tạo client với smart config
+        client = ChatClient()
+        
+        # Kết nối
+        if not client.connect():
+            print("❌ Không thể kết nối đến server")
+            return 1
+        
+        # Bắt đầu chat
+        client.start_chat()
+        
+        return 0
+        
+    except KeyboardInterrupt:
+        print('\n👋 Goodbye!')
+        return 130
+    except Exception as e:
+        print(f'❌ Lỗi không mong đợi: {e}')
+        return 1
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
