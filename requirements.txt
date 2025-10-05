@@ -1,0 +1,15 @@
+# Multi-User Chat Application - Client Requirements
+# Không cần thư viện bên ngoài - chỉ sử dụng Python built-in libraries
+
+# Built-in libraries được sử dụng:
+# - socket: Giao tiếp mạng TCP/IP
+# - threading: Xử lý đa luồng cho nhận tin nhắn
+# - configparser: Đọc file cấu hình
+# - re: Regular expressions cho validation
+# - datetime: Xử lý thời gian
+# - os, sys: Utilities hệ thống
+
+# Để phát triển và testing (tùy chọn):
+pytest>=6.0.0
+black>=21.0.0
+flake8>=3.9.0
