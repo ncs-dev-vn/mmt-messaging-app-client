@@ -97,25 +97,16 @@ Entry point chính để chạy client với đầy đủ tính năng.
 ### Network Utilities
 
 ```python
-from utils import test_server_connection, scan_network_for_servers
+from utils import test_server_connection
 
 # Test kết nối
 is_available = test_server_connection('192.168.1.100', 12345, timeout=5)
-
-# Quét mạng tìm server
-servers = scan_network_for_servers(port=12345, timeout=2)
 ```
 
 ### Validation Utilities
 
 ```python
-from utils import validate_ip_address, validate_port, validate_nickname
-
-# Validate IP
-is_valid = validate_ip_address('192.168.1.100')  # True
-
-# Validate port
-is_valid = validate_port('8080')  # True
+from utils import validate_nickname
 
 # Validate nickname
 is_valid, message = validate_nickname('user123')  # (True, 'Valid')

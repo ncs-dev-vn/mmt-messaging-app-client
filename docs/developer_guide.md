@@ -138,40 +138,30 @@ def get_default_server_info():
 
 ### 3. Network Utilities
 
-**IP Validation:**
+**Network Utilities:**
 ```python
-def validate_ip_address(ip):
-    """Validate IPv4 address format"""
+def get_local_ip():
+    """Get local IP for network scanning"""
     try:
-        socket.inet_aton(ip)
-        return True
-    except socket.error:
-        return False
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    except:
+        return "Unable to determine"
 ```
 
-**Network Scanning:**
+**Connection Testing:**
 ```python
-def scan_network_for_servers(port=12345):
-    """Multi-threaded network scanning"""
-    import concurrent.futures
-    
-    def test_server(ip):
-        return test_server_connection(ip, port, timeout=1)
-    
-    # Get network range (192.168.1.1-254)
-    network_base = get_network_base()
-    
-    # Parallel scanning with ThreadPoolExecutor
-    with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
-        futures = {executor.submit(test_server, f"{network_base}.{i}"): i 
-                  for i in range(1, 255)}
-        
-        for future in concurrent.futures.as_completed(futures):
-            if future.result():
-                ip = f"{network_base}.{futures[future]}"
-                return ip, port
-                
-    return None, None
+def test_server_connection(host, port, timeout=5):
+    """Test if server is available"""
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(timeout)
+        result = sock.connect_ex((host, port))
+        sock.close()
+        return result == 0
+    except:
+        return False
 ```
 
 ## Development Setup
@@ -303,8 +293,8 @@ def test_network_scanning(self):
     """Test auto-scan functionality"""
     with patch('utils.test_server_connection') as mock_test:
         mock_test.return_value = True
-        host, port = scan_network_for_servers()
-        self.assertIsNotNone(host)
+        result = test_server_connection('127.0.0.1', 12345)
+        self.assertTrue(result)
 ```
 
 ### 4. Running Tests
@@ -467,36 +457,34 @@ def robust_receive_messages(self):
 # Good
 def connect_to_server(host: str, port: int) -> bool:
     """Connect to chat server with proper formatting."""
-    if not validate_ip_address(host):
-        raise ValidationError("Invalid IP address")
+    if not host or not isinstance(port, int):
+        raise ValidationError("Invalid host or port")
     return True
 
 # Bad  
 def connectToServer(host,port):
-    if not validate_ip_address(host):raise ValidationError("Invalid IP address")
+    if not host:raise ValidationError("Invalid host")
     return True
 ```
 
 **Docstring Standards:**
 ```python
-def scan_network_for_servers(port=12345, timeout=3):
+def test_server_connection(host, port, timeout=2):
     """
-    Scan local network for chat servers.
+    Test if a server is running at host:port.
     
     Args:
-        port (int): Port to scan on each IP address
-        timeout (int): Connection timeout per IP
+        host (str): Server IP address or hostname
+        port (int): Port number to test
+        timeout (int): Connection timeout in seconds
         
     Returns:
-        tuple: (ip_address, port) if found, (None, None) if not found
-        
-    Raises:
-        NetworkError: If network interface cannot be determined
+        bool: True if server is available, False otherwise
         
     Example:
-        >>> ip, port = scan_network_for_servers(12345)
-        >>> if ip:
-        ...     print(f"Server found at {ip}:{port}")
+        >>> available = test_server_connection('127.0.0.1', 12345)
+        >>> if available:
+        ...     print("Server is running!")
     """
 ```
 

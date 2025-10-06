@@ -4,7 +4,7 @@ import sys
 
 try:
     from config import get_default_server_info, get_buffer_size, get_connection_timeout
-    from utils import validate_nickname, validate_message_content, validate_message_frequency
+    from utils import validate_nickname, validate_message_content
     CONFIG_AVAILABLE = True
 except ImportError:
     CONFIG_AVAILABLE = False
