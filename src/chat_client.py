@@ -72,7 +72,7 @@ class ChatClient:
                         continue
                 
                 # Gửi nickname đến server và chờ phản hồi
-                nickname_command = f"SET_NICKNAME:{nickname}"
+                nickname_command = f"/nick {nickname}"
                 self.client_socket.send(nickname_command.encode('utf-8'))
                 print(f'🔄 Đang kiểm tra nickname "{nickname}"...')
                 
@@ -154,7 +154,7 @@ class ChatClient:
         
         try:
             # Format tin nhắn chat với prefix đặc biệt
-            chat_message = f"CHAT:{self.nickname}: {message}"
+            chat_message = f"{self.nickname}: {message}"
             self.client_socket.send(chat_message.encode('utf-8'))
             return True
         except Exception as e:
@@ -226,17 +226,9 @@ class ChatClient:
         
         if self.client_socket:
             try:
-                # Gửi thông báo goodbye đến server trước khi đóng
-                goodbye_message = f"DISCONNECT:{self.nickname}"
-                self.client_socket.send(goodbye_message.encode('utf-8'))
-                
-                # Chờ một chút để server xử lý
-                import time
-                time.sleep(0.1)
-                
-                # Đóng socket properly
-                self.client_socket.shutdown(socket.SHUT_RDWR)
-                self.client_socket.close()
+                # Gửi command /quit đến server để thông báo ngắt kết nối
+                quit_command = f"/quit"
+                self.client_socket.send(quit_command.encode('utf-8'))
             except:
                 # Nếu không gửi được thông báo, vẫn đóng socket
                 try:
