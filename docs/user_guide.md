@@ -1,306 +1,303 @@
-# User Guide - Multi-User Chat Client
+# Hướng Dẫn Người Dùng - Ứng Dụng Chat Đa Người Dùng 🚀
 
-## Giới thiệu
+## 📖 Tổng quan
 
-Đây là hướng dẫn sử dụng chi tiết cho ứng dụng Chat Client. Client này cho phép bạn kết nối đến chat server và tham gia các cuộc trò chuyện real-time.
+Ứng dụng Chat hiện đại với khả năng **tự động tìm kiếm máy chủ**, **giao diện thân thiện**, và **hệ thống lọc nội dung** thông minh. Được thiết kế cho người dùng cuối với trải nghiệm đơn giản và trực quan.
 
-## Cài đặt
+## 🚀 Bắt Đầu Nhanh
 
-### Yêu cầu hệ thống
-- Python 3.6 trở lên
-- Không cần cài đặt thư viện bên ngoài
-
-### Cài đặt ứng dụng
+### Bước 1: Khởi chạy ứng dụng
 ```bash
-# 1. Clone repository
-git clone https://github.com/ncs-dev-vn/mmt-messaging-app-client.git
-cd mmt-messaging-app-client
-
-# 2. Chạy client
-python3 client.py
+# Chạy ứng dụng chat
+python3 run_client.py
 ```
 
-## Hướng dẫn sử dụng
+### Bước 2: Chọn cách kết nối
+```
+=== Ứng Dụng Chat Đa Người Dùng ===
+=== Cấu hình Máy chủ ===
+1. Tự động quét mạng LAN    ← Khuyến nghị cho người mới
+2. Nhập thủ công           ← Dành cho người dùng nâng cao
 
-### 1. Khởi chạy ứng dụng
-
-```bash
-python3 client.py
+Chọn phương thức (1/2) [mặc định: 2]:
 ```
 
-Bạn sẽ thấy màn hình chào:
-```
-=== Multi-User Chat Client ===
-✅ Configuration loaded successfully
+### Bước 3: Kết nối và chat
+- Nhập biệt danh của bạn
+- Bắt đầu chat với mọi người!
 
-Connection options:
-1. Local server (127.0.0.1) - Same computer
-2. Remote server - Enter IP manually
-3. Quick connect - Smart defaults
-4. Auto-scan local network (experimental)
+## 🌐 Cách Kết Nối Máy Chủ
 
-Choose option (1-4, default=3):
-```
+### 🔍 Phương pháp 1: Tự động khám phá (Dễ nhất)
 
-### 2. Các tùy chọn kết nối
-
-#### Option 1: Local Server
-- **Khi nào dùng:** Server chạy trên cùng máy tính
-- **Ưu điểm:** Nhanh, không cần setup mạng
-- **Địa chỉ:** 127.0.0.1 (localhost)
-
-```
-Choose option (1-4, default=3): 1
-🏠 Connecting to LOCAL server on port 12345
-```
-
-#### Option 2: Remote Server
-- **Khi nào dùng:** Server ở máy khác trong mạng hoặc internet
-- **Yêu cầu:** Biết địa chỉ IP của server
-- **Nhập thông tin:** IP address và port
-
-```
-Choose option (1-4, default=3): 2
-Enter server IP address: 192.168.1.100
-Enter port (default=12345): 8080
-🌐 Connecting to REMOTE server at 192.168.1.100:8080
-```
-
-#### Option 3: Quick Connect
-- **Khi nào dùng:** Sử dụng cài đặt mặc định từ config
-- **Ưu điểm:** Nhanh chóng, không cần nhập thông tin
-- **Tự động:** Sử dụng smart detection
-
-```
-Choose option (1-4, default=3): 3
-⚡ Quick connect mode (config: 127.0.0.1:12345)
-```
-
-#### Option 4: Auto-scan Network
-- **Khi nào dùng:** Không biết IP của server
-- **Ưu điểm:** Tự động tìm server trong mạng LAN
-- **Lưu ý:** Có thể mất vài giây để scan
-
-```
-Choose option (1-4, default=3): 4
-🔍 Scanning for chat servers in local network...
-   Scanning network: 192.168.1.1-254 on port 12345
-   ✅ Server found at 192.168.1.100:12345
-✅ Found server at 192.168.1.100:12345
-```
-
-### 3. Nhập Nickname
-
-Sau khi kết nối thành công, bạn cần nhập nickname:
-
-```
-Đã kết nối thành công với Server.
-Nhập nickname của bạn: Alice
-```
-
-**Quy tắc nickname:**
-- Không được để trống
-- Tối đa 20 ký tự (có thể thay đổi trong config)
-- Chỉ chứa chữ cái, số, dấu gạch dưới (_) và dấu gạch ngang (-)
-
-### 4. Chat
-
-Khi đã kết nối thành công, bạn có thể bắt đầu chat:
-
-```
-💬 After connecting, you can start chatting!
-📝 Commands: type 'quit' to exit, Ctrl+C for quick exit
-==================================================
-[Alice đã tham gia phòng chat]
-Xin chào mọi người!
-Bob: Chào Alice!
-Charlie: Hế lô cả nhà!
-```
-
-**Cách sử dụng:**
-- Gõ tin nhắn → Nhấn Enter để gửi
-- Tin nhắn từ người khác sẽ hiển thị tự động
-- Gõ `quit` hoặc `exit` để thoát
-- Nhấn `Ctrl+C` để thoát nhanh
-
-### 5. Thoát khỏi chat
-
-```
-quit
-Đang ngắt kết nối...
-```
-
-Hoặc nhấn `Ctrl+C`:
-```
-^C
-Đang ngắt kết nối...
-```
-
-## Tùy chỉnh cấu hình
-
-### File cấu hình
-
-Chỉnh sửa file `config/client_config.ini`:
-
-```ini
-[server]
-default_host = 192.168.1.100  # Thay đổi server mặc định
-default_port = 8080           # Thay đổi port mặc định
-timeout = 10                  # Giảm timeout nếu mạng nhanh
-
-[client]
-buffer_size = 2048           # Tăng buffer nếu tin nhắn dài
-max_nickname_length = 15     # Giới hạn nickname ngắn hơn
-
-[network]
-auto_scan_enabled = false    # Tắt auto-scan nếu không cần
-```
-
-### Environment Variables
+**Khi nào sử dụng**: Khi bạn không biết địa chỉ máy chủ cụ thể
 
 ```bash
-# Set server mặc định qua environment
-export CHAT_SERVER_HOST=192.168.1.100
-export CHAT_SERVER_PORT=8080
-python3 client.py
+# Chọn tùy chọn 1 khi được hỏi
+Chọn phương thức (1/2): 1
 
-# Client sẽ ưu tiên sử dụng IP và port từ environment variables
+# Ứng dụng sẽ tự động quét mạng
+🔍 Đang quét mạng 192.168.1.0/24...
+✅ Tìm thấy máy chủ: 192.168.1.100:12345
+✅ Tìm thấy máy chủ: 192.168.1.200:8080
+
+🎉 Tìm thấy 2 máy chủ:
+   1. 192.168.1.100:12345
+   2. 192.168.1.200:8080
+
+# Chọn máy chủ từ danh sách
+Chọn máy chủ (1-2): 1
 ```
 
-**Ưu tiên sử dụng:**
-1. 🥇 Environment Variables (cao nhất)
-2. 🥈 Config File  
-3. 🥉 Hard-coded defaults (thấp nhất)
+**Ưu điểm**:
+- ✅ Không cần biết địa chỉ IP
+- ✅ Tự động tìm tất cả máy chủ trong mạng
+- ✅ Hiển thị danh sách để lựa chọn
+- ✅ Thích hợp cho mạng LAN/văn phòng
 
-## Xử lý lỗi thường gặp
+**Lưu ý**:
+- Quá trình quét có thể mất 10-30 giây
+- Cần kết nối mạng LAN với máy chủ chat
+- Chỉ tìm máy chủ trong cùng subnet
 
-### 1. "Connection refused"
-```
-Lỗi: Không thể kết nối tới server. Lỗi: [Errno 61] Connection refused
-```
+### ⌨️ Phương pháp 2: Nhập thủ công (Chính xác)
 
-**Nguyên nhân và giải pháp:**
-- Server chưa chạy → Khởi động server trước
-- IP/port sai → Kiểm tra lại địa chỉ server
-- Firewall chặn → Tắt firewall hoặc mở port
+**Khi nào sử dụng**: Khi bạn biết chính xác địa chỉ máy chủ
 
-### 2. "command not found: python"
-```
-zsh: command not found: python
-```
-
-**Giải pháp:**
-- Thử `python3` thay vì `python`
-- Cài đặt Python từ [python.org](https://python.org)
-
-### 3. "No servers found"
-```
-❌ No servers found, falling back to localhost
-```
-
-**Nguyên nhân và giải pháp:**
-- Không có server trong mạng LAN
-- Server chạy port khác → Thay đổi port trong config
-- Mạng bị chặn → Kiểm tra network security
-
-### 4. "Nickname không hợp lệ"
-```
-❌ Nickname chỉ được chứa chữ, số, _ và -
-```
-
-**Giải pháp:**
-- Không dùng ký tự đặc biệt (@, #, !, v.v.)
-- Giữ độ dài dưới 20 ký tự
-- Không để trống
-
-## Tips và Tricks
-
-### 1. Kết nối nhanh
 ```bash
-# Set environment để không cần nhập IP mỗi lần
-export CHAT_SERVER_HOST=192.168.1.100
-export CHAT_SERVER_PORT=8080
-echo "3" | python3 client.py  # Auto chọn option 3
+# Chọn tùy chọn 2 khi được hỏi  
+Chọn phương thức (1/2): 2
+
+--- Nhập thủ công ---
+Nhập địa chỉ máy chủ [mặc định: 127.0.0.1]: chat.congty.com
+Nhập cổng máy chủ [mặc định: 12345]: 8080
+✅ Sẽ kết nối tới chat.congty.com:8080
 ```
 
-### 2. Debug kết nối
+**Ưu điểm**:
+- ✅ Kết nối đến máy chủ bất kỳ (LAN/Internet)
+- ✅ Tự động xác thực (IP, tên miền, dải cổng)  
+- ✅ Hỗ trợ giá trị mặc định (nhấn Enter)
+- ✅ Thích hợp cho máy chủ production
+
+**Các định dạng địa chỉ hỗ trợ**:
+- **IP cục bộ**: `192.168.1.100`, `10.0.0.5`
+- **Localhost**: `127.0.0.1`, `localhost`
+- **Tên miền**: `chat.example.com`, `server.local`
+- **IP công khai**: `203.0.113.1`
+
+## 👤 Thiết Lập Biệt Danh
+
+### Quy tắc biệt danh:
+```
+✅ Được phép:
+- Chữ cái: a-z, A-Z  
+- Số: 0-9
+- Ký tự đặc biệt: _ (gạch dưới), - (gạch ngang)
+- Độ dài: 1-20 ký tự
+
+❌ Không được phép:
+- Ký tự đặc biệt khác: @, #, $, %, v.v.
+- Khoảng trắng
+- Biệt danh trống
+- Quá 20 ký tự
+```
+
+### Ví dụ biệt danh hợp lệ:
+```
+✅ "Nam123"      ✅ "chat_user"    ✅ "Player-One"
+✅ "admin"       ✅ "user_2024"    ✅ "TestUser"
+✅ "a"           ✅ "ABC_XYZ"      ✅ "dev-team"
+```
+
+### Ví dụ biệt danh không hợp lệ:
+```
+❌ "user name"           (có khoảng trắng)
+❌ "user@domain"         (có ký tự @)  
+❌ "user#123"            (có ký tự #)
+❌ ""                    (trống)
+❌ "very_long_username_over_limit"  (quá dài)
+```
+
+## 💬 Gửi Tin Nhắn
+
+### Tin nhắn hợp lệ:
+- **Độ dài**: 2-500 ký tự
+- **Nội dung**: Bất kỳ văn bản nào (sau khi lọc)
+- **Ngôn ngữ**: Tiếng Việt, Tiếng Anh, Unicode
+
+### Hệ thống lọc nội dung:
+
+#### 🚫 Từ ngữ không phù hợp
 ```bash
-# Test ping trước khi chạy client
-ping 192.168.1.100
-
-# Test port có mở không
-telnet 192.168.1.100 12345
+# Ví dụ tin nhắn bị lọc:
+Bạn gõ: "Xin chào loz mọi người"
+Hiển thị: "⚠️ Cảnh báo: Đã lọc từ không phù hợp: loz"
+Gửi đi: "Xin chào *** mọi người"
 ```
 
-### 3. Multiple clients
+#### 🔁 Chống spam
 ```bash
-# Mở nhiều terminal để test nhiều user
-Terminal 1: python3 client.py  # Alice
-Terminal 2: python3 client.py  # Bob
-Terminal 3: python3 client.py  # Charlie
+# Các mẫu bị từ chối:
+❌ "aaaaaaaaa"          (lặp ký tự)
+❌ "XIN CHÀO MỌI NGƯỜI" (quá nhiều chữ hoa)
+❌ "Hế lô!!!!!!!"       (quá nhiều dấu chấm than)
+❌ "###@@@$$$"          (chỉ ký tự đặc biệt)
 ```
 
-### 4. Tùy chỉnh nhanh
+#### ✅ Tin nhắn bình thường
 ```bash
-# Thay đổi port mặc định nhanh
-sed -i 's/default_port = 12345/default_port = 8080/' config/client_config.ini
+✅ "Xin chào mọi người!"
+✅ "Hôm nay thế nào?"
+✅ "Có ai online không?"
+✅ "Thanks! 😊"
 ```
 
-## Troubleshooting Advanced
-
-### 1. Network Issues
+### Lệnh đặc biệt:
 ```bash
-# Kiểm tra network interface
-ifconfig  # macOS/Linux
-ipconfig  # Windows
-
-# Kiểm tra routing
-netstat -rn
-
-# Test DNS
-nslookup google.com
+quit    # Thoát khỏi ứng dụng
+exit    # Thoát khỏi ứng dụng  
 ```
 
-### 2. Python Issues
+## 🎯 Các Tình Huống Sử Dụng
+
+### 🏢 Sử dụng trong văn phòng/công ty
 ```bash
-# Kiểm tra Python version
-python3 --version
+# 1. Khởi chạy ứng dụng
+python3 run_client.py
 
-# Kiểm tra modules
-python3 -c "import socket, threading; print('OK')"
+# 2. Chọn tự động quét mạng LAN
+Chọn phương thức (1/2): 1
 
-# Test socket cơ bản
-python3 -c "import socket; s=socket.socket(); print('Socket OK')"
+# 3. Chờ tìm máy chủ công ty
+# 4. Chọn máy chủ từ danh sách
+# 5. Đặt biệt danh (vd: "nguyen_van_a")
+# 6. Bắt đầu chat với đồng nghiệp
 ```
 
-### 3. Config Issues
+### 🏠 Sử dụng tại nhà/mạng gia đình
 ```bash
-# Kiểm tra config syntax
-python3 -c "
-import configparser
-config = configparser.ConfigParser()
-config.read('config/client_config.ini')
-print('Config OK')
-"
+# Kết nối đến máy chủ gia đình
+Nhập địa chỉ máy chủ: 192.168.1.5
+Nhập cổng máy chủ: 12345
 ```
 
-## FAQ
+### 🌐 Kết nối máy chủ từ xa (Internet)
+```bash
+# Kết nối qua Internet
+Nhập địa chỉ máy chủ: chat.mydomain.com
+Nhập cổng máy chủ: 443
+```
 
-**Q: Client có thể kết nối qua internet không?**
-A: Có, nhưng server cần có IP công khai và port forwarding.
+### 🧪 Kiểm tra/phát triển
+```bash
+# Kết nối localhost để test
+Nhập địa chỉ máy chủ: localhost  
+Nhập cổng máy chủ: 12345
+```
 
-**Q: Có thể chat với nhiều server cùng lúc không?**
-A: Hiện tại không, mỗi instance client chỉ kết nối 1 server.
+## 🔧 Xử Lý Sự Cố
 
-**Q: Tin nhắn có được mã hóa không?**
-A: Hiện tại chưa, tin nhắn gửi dạng plain text qua TCP.
+### 🚨 Các lỗi thường gặp:
 
-**Q: Client có lưu lịch sử chat không?**
-A: Hiện tại không, tin nhắn chỉ hiển thị trong session hiện tại.
+#### "Không tìm thấy máy chủ nào"
+**Nguyên nhân**: Tự động quét không tìm thấy máy chủ
+**Giải pháp**:
+1. Chọn "Nhập thủ công"
+2. Kiểm tra kết nối mạng
+3. Đảm bảo máy chủ đang chạy
+4. Thử với địa chỉ IP cụ thể
 
-**Q: Có thể thay đổi giao diện không?**
-A: Hiện tại chỉ CLI, có thể phát triển GUI trong tương lai.
+#### "Kết nối bị từ chối"  
+**Nguyên nhân**: Máy chủ không chạy hoặc cổng sai
+**Giải pháp**:
+1. Kiểm tra máy chủ có đang chạy không
+2. Xác thực địa chỉ và cổng
+3. Kiểm tra tường lửa/firewall
+4. Thử cổng khác (8080, 3000, 9999)
+
+#### "Biệt danh không hợp lệ"
+**Nguyên nhân**: Biệt danh vi phạm quy tắc
+**Giải pháp**:
+1. Chỉ sử dụng chữ, số, _, -
+2. Không dùng khoảng trắng
+3. Độ dài 1-20 ký tự
+4. Không để trống
+
+#### "Tin nhắn bị từ chối"
+**Nguyên nhân**: Vi phạm quy tắc nội dung
+**Giải pháp**:
+1. Tránh từ ngữ thô tục
+2. Không lặp ký tự (aaaa)
+3. Hạn chế chữ hoa
+4. Độ dài 2-500 ký tự
+
+#### "Quét mạng quá chậm"
+**Nguyên nhân**: Mạng lớn hoặc chậm
+**Giải pháp**:
+1. Đợi thêm 30-60 giây
+2. Nhấn Ctrl+C để hủy
+3. Chọn "Nhập thủ công"
+4. Kiểm tra kết nối WiFi/mạng
+
+## 📱 Giao Diện Người Dùng
+
+### Biểu tượng và ý nghĩa:
+```
+🚀 - Khởi chạy/bắt đầu
+🔍 - Đang tìm kiếm/quét
+✅ - Thành công
+❌ - Lỗi/thất bại  
+⚠️ - Cảnh báo
+💬 - Tin nhắn chat
+👤 - Biệt danh/người dùng
+🔗 - Kết nối
+📡 - Mạng/kết nối
+⏱️ - Thời gian/timeout
+👋 - Chào/tạm biệt
+```
+
+### Màu sắc (nếu terminal hỗ trợ):
+- **Xanh lá**: Thành công, kết nối OK
+- **Đỏ**: Lỗi, thất bại
+- **Vàng**: Cảnh báo, chú ý
+- **Xanh dương**: Thông tin, hướng dẫn
+
+## 🎓 Mẹo Sử Dụng
+
+### Cho người mới:
+1. **Luôn chọn "Tự động quét" trước** - dễ nhất cho người mới
+2. **Đặt biệt danh đơn giản** - vd: "user1", "nam", "test_user"  
+3. **Thử tin nhắn ngắn trước** - vd: "hello", "xin chào"
+4. **Đọc cảnh báo kỹ** - hệ thống sẽ hướng dẫn khi có lỗi
+
+### Cho người dùng nâng cao:
+1. **Ghi nhớ địa chỉ máy chủ thường dùng** - tiết kiệm thời gian
+2. **Sử dụng biệt danh nhất quán** - dễ nhận biết
+3. **Kiểm tra log nếu có vấn đề** - debug hiệu quả
+4. **Thử các cổng khác nhau** - 8080, 3000, 9999 nếu 12345 bận
+
+### Bảo mật:
+1. **Không chia sẻ thông tin nhạy cảm** trong chat
+2. **Sử dụng biệt danh không tiết lộ thông tin cá nhân**
+3. **Chỉ kết nối đến máy chủ tin tưởng**
+4. **Báo cáo hành vi không phù hợp** nếu thấy
+
+## 🔄 Quy Trình Chat Hoàn Chỉnh
+
+```
+1. 🚀 Khởi chạy: python3 run_client.py
+2. 🌐 Chọn phương pháp kết nối (tự động/thủ công)
+3. 🔍 Tìm/nhập thông tin máy chủ
+4. 🔗 Kết nối đến máy chủ  
+5. 👤 Đặt biệt danh hợp lệ
+6. 💬 Bắt đầu chat
+7. 📝 Gửi tin nhắn (có lọc nội dung)
+8. 👋 Gõ "quit" để thoát
+```
 
 ---
 
-**🎉 Chúc bạn có những cuộc trò chuyện vui vẻ!**
+**Chúc bạn có những trải nghiệm chat vui vẻ! 🎉**
+
+*Nếu gặp vấn đề, hãy tham khảo phần [Xử lý sự cố](#-xử-lý-sự-cố) hoặc liên hệ hỗ trợ kỹ thuật.*

@@ -3,7 +3,7 @@ import threading
 import sys
 
 try:
-    from config import get_default_server_info, get_buffer_size, get_connection_timeout
+    from config import get_default_server_info, get_buffer_size, get_connection_timeout, get_server_info_from_user
     from utils import validate_nickname, validate_message_content
     CONFIG_AVAILABLE = True
 except ImportError:
@@ -12,11 +12,10 @@ except ImportError:
 
 class ChatClient:
     def __init__(self, host=None, port=None, buffer_size=None):
-        # Sử dụng config system thay vì hard-code
+        # Sử dụng các tham số được truyền vào (từ user input)
         if CONFIG_AVAILABLE:
-            default_host, default_port = get_default_server_info()
-            self.host = host or default_host
-            self.port = port or default_port
+            self.host = host or '127.0.0.1'
+            self.port = port or 12345
             self.buffer_size = buffer_size or get_buffer_size()
             self.timeout = get_connection_timeout()
         else:
@@ -72,8 +71,9 @@ class ChatClient:
                         print('❌ Nickname không hợp lệ (1-20 ký tự)')
                         continue
                 
-                # Gửi nickname đến server
-                self.client_socket.send(nickname.encode('utf-8'))
+                # Gửi nickname đến server với prefix đặc biệt
+                nickname_command = f"SET_NICKNAME:{nickname}"
+                self.client_socket.send(nickname_command.encode('utf-8'))
                 self.nickname = nickname
                 print(f'✅ Nickname "{nickname}" đã được đặt')
                 return True
@@ -90,21 +90,25 @@ class ChatClient:
         if not message.strip():
             return False
             
-        # Content moderation (nếu có)
-        if CONFIG_AVAILABLE:
-            try:
-                is_valid, filtered_msg, reason = validate_message_content(message)
-                if not is_valid:
-                    print(f'❌ {reason}')
-                    return False
-                if reason != "OK" and "Cảnh báo" in reason:
-                    print(f'⚠️ {reason}')
-                message = filtered_msg
-            except:
-                pass  # Fallback nếu content moderation lỗi
+        # Content moderation (luôn chạy để đảm bảo an toàn)
+        try:
+            is_valid, filtered_msg, reason = validate_message_content(message)
+            if not is_valid:
+                print(f'❌ {reason}')
+                return False
+            if reason != "OK" and "Cảnh báo" in reason:
+                print(f'⚠️ {reason}')
+            message = filtered_msg
+        except ImportError:
+            print("⚠️ Content moderation không khả dụng")
+        except Exception as e:
+            print(f"⚠️ Lỗi content moderation: {e}")
+            pass  # Fallback nếu content moderation lỗi
         
         try:
-            self.client_socket.send(message.encode('utf-8'))
+            # Format tin nhắn chat với prefix đặc biệt
+            chat_message = f"CHAT:{self.nickname}: {message}"
+            self.client_socket.send(chat_message.encode('utf-8'))
             return True
         except Exception as e:
             print(f'❌ Không thể gửi tin nhắn: {e}')
@@ -186,14 +190,16 @@ def main():
     """Entry point chính"""
     print("=== Multi-User Chat Client ===")
     
-    if CONFIG_AVAILABLE:
-        print("✅ Config system loaded")
-    else:
-        print("⚠️ Using default configuration")
-    
     try:
-        # Tạo client với smart config
-        client = ChatClient()
+        # Lấy server info từ user input
+        if CONFIG_AVAILABLE:
+            host, port = get_server_info_from_user()
+        else:
+            print("⚠️ Config không khả dụng, sử dụng mặc định")
+            host, port = '127.0.0.1', 12345
+        
+        # Tạo client với server info từ user
+        client = ChatClient(host=host, port=port)
         
         # Kết nối
         if not client.connect():
