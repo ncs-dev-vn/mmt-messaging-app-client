@@ -10,6 +10,13 @@ def validate_nickname(nickname):
     if not nickname or len(nickname.strip()) == 0:
         return False, "Nickname không được để trống"
     
+    # Tự động trim spaces và whitespace
+    nickname = nickname.strip()
+    
+    # Kiểm tra độ dài tối thiểu (ít nhất 2 ký tự)
+    if len(nickname) < 2:
+        return False, "Nickname phải có ít nhất 2 ký tự"
+    
     # Get max length from config (fallback to 20)
     try:
         from config import get_max_nickname_length
@@ -20,8 +27,9 @@ def validate_nickname(nickname):
     if len(nickname) > max_length:
         return False, f"Nickname không được dài quá {max_length} ký tự"
     
+    # Kiểm tra pattern - chỉ cho phép: chữ cái (a-z, A-Z), số (0-9), gạch dưới (_), gạch ngang (-)
     if not re.match(r'^[a-zA-Z0-9_-]+$', nickname):
-        return False, "Nickname chỉ được chứa chữ, số, _ và -"
+        return False, "Nickname chỉ được chứa chữ cái (a-z, A-Z), số (0-9), gạch dưới (_) và gạch ngang (-)"
     
     return True, "Valid"
 

@@ -55,7 +55,7 @@ class ChatClient:
             return False
     
     def set_nickname(self):
-        """Nhập và validate nickname"""
+        """Nhập và validate nickname, chờ phản hồi từ server"""
         while True:
             try:
                 nickname = input("Nhập nickname của bạn: ").strip()
@@ -71,12 +71,16 @@ class ChatClient:
                         print('❌ Nickname không hợp lệ (1-20 ký tự)')
                         continue
                 
-                # Gửi nickname đến server với prefix đặc biệt
+                # Gửi nickname đến server và chờ phản hồi
                 nickname_command = f"SET_NICKNAME:{nickname}"
                 self.client_socket.send(nickname_command.encode('utf-8'))
-                self.nickname = nickname
-                print(f'✅ Nickname "{nickname}" đã được đặt')
-                return True
+                print(f'🔄 Đang kiểm tra nickname "{nickname}"...')
+                
+                # Chờ phản hồi từ server về nickname
+                if self.wait_for_nickname_response(nickname):
+                    return True
+                # Nếu bị trùng, tiếp tục vòng lặp để nhập nickname khác
+                print("🔄 Vui lòng chọn nickname khác...")
                 
             except KeyboardInterrupt:
                 print('\n👋 Đã hủy nhập nickname')
@@ -84,6 +88,49 @@ class ChatClient:
             except Exception as e:
                 print(f'❌ Lỗi khi đặt nickname: {e}')
                 return False
+    
+    def wait_for_nickname_response(self, nickname):
+        """Chờ phản hồi từ server về việc nickname có hợp lệ không"""
+        try:
+            # Đặt timeout để chờ response từ server
+            self.client_socket.settimeout(10)  # 10 giây timeout
+            data = self.client_socket.recv(self.buffer_size)
+            self.client_socket.settimeout(None)  # Reset về blocking mode
+            
+            if data:
+                response = data.decode('utf-8').strip()
+                
+                if response == "NICKNAME_ACCEPTED":
+                    self.nickname = nickname
+                    print(f'✅ Nickname "{nickname}" đã được chấp nhận! Chào mừng bạn đến phòng chat!')
+                    return True
+                    
+                elif response == "NICKNAME_TAKEN":
+                    print(f'❌ Nickname "{nickname}" đã được sử dụng bởi người khác')
+                    return False
+                    
+                elif response.startswith("NICKNAME_REJECTED"):
+                    # Server có thể gửi lý do cụ thể: NICKNAME_REJECTED:reason
+                    parts = response.split(":", 1)
+                    reason = parts[1] if len(parts) > 1 else "không hợp lệ"
+                    print(f'❌ Nickname "{nickname}" bị từ chối: {reason}')
+                    return False
+                    
+                else:
+                    # Response không mong đợi, coi như thành công để không bị block
+                    print(f'⚠️ Phản hồi không rõ từ server: {response}')
+                    self.nickname = nickname
+                    return True
+            else:
+                print(f'❌ Không nhận được phản hồi từ server')
+                return False
+                
+        except socket.timeout:
+            print(f'⏱️ Timeout khi chờ phản hồi từ server. Thử lại...')
+            return False
+        except Exception as e:
+            print(f'❌ Lỗi khi chờ phản hồi server: {e}')
+            return False
     
     def send_message(self, message):
         """Gửi tin nhắn với content validation"""
@@ -173,15 +220,29 @@ class ChatClient:
         return True
     
     def disconnect(self):
-        """Ngắt kết nối an toàn"""
+        """Ngắt kết nối an toàn với thông báo server"""
         self.running = False
         self.is_connected = False
         
         if self.client_socket:
             try:
+                # Gửi thông báo goodbye đến server trước khi đóng
+                goodbye_message = f"DISCONNECT:{self.nickname}"
+                self.client_socket.send(goodbye_message.encode('utf-8'))
+                
+                # Chờ một chút để server xử lý
+                import time
+                time.sleep(0.1)
+                
+                # Đóng socket properly
+                self.client_socket.shutdown(socket.SHUT_RDWR)
                 self.client_socket.close()
             except:
-                pass
+                # Nếu không gửi được thông báo, vẫn đóng socket
+                try:
+                    self.client_socket.close()
+                except:
+                    pass
             self.client_socket = None
         
         print('👋 Đã ngắt kết nối')
