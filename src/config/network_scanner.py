@@ -1,63 +1,10 @@
 """
-Configuration utilities for chat client
-Cung cấp cấu hình với user input, network scanning và fallback values
+Network scanning utilities
 """
 
 import socket
 import threading
 import ipaddress
-import time
-
-def get_server_info_from_user():
-    """Get server information from user input with auto-discovery option"""
-    print("=== Cấu hình Server ===")
-    print("1. Tự động quét mạng LAN")
-    print("2. Nhập thủ công")
-    
-    while True:
-        try:
-            choice = input("Chọn phương thức (1/2) [mặc định: 2]: ").strip()
-            if not choice or choice == '2':
-                # Manual input
-                break
-            elif choice == '1':
-                # Auto-discovery
-                result = auto_discover_servers()
-                if result:
-                    return result
-                # If auto-discovery fails or user cancels, fall back to manual
-                print("\n🔄 Chuyển sang nhập thủ công...")
-                break
-            else:
-                print("❌ Chọn 1 hoặc 2")
-        except KeyboardInterrupt:
-            print("\n🔄 Chuyển sang nhập thủ công...")
-            break
-    
-    # Manual input
-    print("\n--- Nhập thủ công ---")
-    
-    # Input host
-    host_input = input("Nhập server host [mặc định: 127.0.0.1]: ").strip()
-    host = host_input if host_input else '127.0.0.1'
-    
-    # Input port with validation
-    while True:
-        port_input = input("Nhập server port [mặc định: 12345]: ").strip()
-        if not port_input:
-            port = 12345
-            break
-        try:
-            port = int(port_input)
-            if 1 <= port <= 65535:
-                break
-            else:
-                print("❌ Port phải từ 1-65535")
-        except ValueError:
-            print("❌ Port phải là số")
-    
-    print(f"✅ Sẽ kết nối tới {host}:{port}")
-    return host, port
 
 def get_local_ip():
     """Get local IP address"""
@@ -83,14 +30,6 @@ def scan_port(host, port, timeout=1):
 def scan_network_for_servers(network_range=None, ports=None, timeout=1):
     """
     Scan LAN để tìm chat servers
-    
-    Args:
-        network_range: CIDR format (e.g., '192.168.1.0/24')
-        ports: List of ports to scan (default: [12345, 8080, 3000, 9999])
-        timeout: Timeout per port scan (seconds)
-    
-    Returns:
-        List of (host, port) tuples where servers are found
     """
     if ports is None:
         ports = [12345, 8080, 3000, 9999, 5000, 8000]
@@ -106,7 +45,11 @@ def scan_network_for_servers(network_range=None, ports=None, timeout=1):
     print(f"⏱️  Timeout: {timeout}s per port")
     
     servers_found = []
-    network = ipaddress.IPv4Network(network_range, strict=False)
+    try:
+        network = ipaddress.IPv4Network(network_range, strict=False)
+    except ValueError:
+        print("❌ Network range không hợp lệ")
+        return servers_found
     
     def scan_host_ports(host_ip):
         host_str = str(host_ip)
@@ -167,23 +110,3 @@ def auto_discover_servers():
     else:
         print("❌ Không tìm thấy server nào trong mạng")
         return None
-
-def get_default_server_info():
-    """Get default server information (fallback)"""
-    return '127.0.0.1', 12345
-
-def get_connection_timeout():
-    """Get connection timeout"""
-    return 30
-
-def get_buffer_size():
-    """Get buffer size"""
-    return 1024
-
-def get_max_nickname_length():
-    """Get max nickname length"""
-    return 20
-
-def get_max_message_length():
-    """Get maximum message length"""
-    return 500

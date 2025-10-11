@@ -1,0 +1,7 @@
+# Core dependencies
+# No external dependencies required for basic functionality
+
+# Optional dependencies for enhanced features:
+# colorama>=0.4.4  # Cross-platform colored terminal text
+# rich>=10.0.0     # Rich text and beautiful formatting
+# prompt-toolkit>=3.0.0  # Advanced input handling
