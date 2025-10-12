@@ -29,6 +29,8 @@ class ChatClient:
         self.nickname = ""
         self.running = False
         self.in_waiting_queue = False
+        self.in_chat_room = False
+        self.room_status_checked = False  # NEW: Track đã check room status chưa
         
         # Message handler sẽ được khởi tạo sau khi có nickname
         self.message_handler = None
@@ -45,6 +47,9 @@ class ChatClient:
             
             self.is_connected = True
             print(MessageFormatter.format_success_message(f'Đã kết nối thành công với Server ({self.host}:{self.port})'))
+            
+            # NEW: Check room status ngay sau khi kết nối
+            self.check_initial_room_status()
             return True
             
         except socket.timeout:
@@ -57,8 +62,69 @@ class ChatClient:
             print(MessageFormatter.format_error_message(f'Lỗi kết nối: {e}'))
             return False
     
+    def check_initial_room_status(self):
+        """Kiểm tra trạng thái phòng chat ngay sau khi kết nối"""
+        try:
+            print(MessageFormatter.format_info_message('Đang kiểm tra trạng thái phòng chat...'))
+            
+            # Bắt đầu thread nhận tin nhắn để lắng nghe response
+            self.running = True
+            receive_thread = threading.Thread(target=self.receive_messages)
+            receive_thread.daemon = True
+            receive_thread.start()
+            
+            # Gửi một message đặc biệt để check room status (hoặc chờ server response tự động)
+            # Một số server tự động gửi welcome message hoặc room status
+            
+            # Chờ một khoảng thời gian ngắn để nhận initial response từ server
+            import time
+            timeout_start = time.time()
+            timeout_duration = 3  # 3 giây
+            
+            while not self.room_status_checked and time.time() - timeout_start < timeout_duration:
+                time.sleep(0.1)
+            
+            # Nếu không nhận được response trong 3 giây, giả sử có thể vào phòng chat
+            if not self.room_status_checked:
+                print(MessageFormatter.format_info_message('Không nhận được thông báo từ server, giả sử có thể vào phòng chat'))
+                self.in_chat_room = True
+                self.in_waiting_queue = False
+                self.room_status_checked = True
+                
+        except Exception as e:
+            print(MessageFormatter.format_warning_message(f'Lỗi khi check room status: {e}'))
+            # Fallback: cho vào phòng chat
+            self.in_chat_room = True
+            self.in_waiting_queue = False
+            self.room_status_checked = True
+    
+    def wait_for_room_access(self):
+        """Chờ để có thể vào phòng chat nếu đang trong hàng chờ"""
+        # Nếu đã ở trong phòng chat rồi thì return True
+        if self.in_chat_room:
+            return True
+            
+        # Nếu đang trong hàng chờ thì chờ
+        if self.in_waiting_queue:
+            print(MessageFormatter.format_info_message('Đang trong hàng chờ, chờ vào phòng chat...'))
+            
+            # Chờ cho đến khi có thể vào phòng chat
+            while self.running and self.is_connected and not self.in_chat_room:
+                try:
+                    import time
+                    time.sleep(0.1)  # Tránh busy waiting
+                except KeyboardInterrupt:
+                    print(MessageFormatter.format_info_message('Đang thoát...'))
+                    return False
+        
+        return self.in_chat_room
+    
     def set_nickname(self):
-        """Nhập và validate nickname, chờ phản hồi từ server"""
+        """Nhập và validate nickname chỉ khi đã vào được phòng chat"""
+        if not self.in_chat_room:
+            print(MessageFormatter.format_error_message('Chưa vào được phòng chat. Không thể đặt nickname.'))
+            return False
+            
         while True:
             try:
                 nickname = input("Nhập nickname của bạn: ").strip()
@@ -104,7 +170,6 @@ class ChatClient:
                 if response == "NICKNAME_ACCEPTED":
                     self.nickname = nickname
                     print(MessageFormatter.format_success_message(f'Nickname "{nickname}" đã được chấp nhận!'))
-                    self.in_waiting_queue = False
                     return True
                     
                 elif response == "NICKNAME_TAKEN":
@@ -117,18 +182,11 @@ class ChatClient:
                     print(MessageFormatter.format_error_message(f'Nickname "{nickname}" bị từ chối: {reason}'))
                     return False
                     
-                elif "Phòng chat đã đầy" in response or "hàng chờ" in response:
-                    print(MessageFormatter.format_server_message(response))
-                    self.nickname = nickname
-                    self.in_waiting_queue = True
-                    return True
-                    
                 else:
-                    # Response khác
+                    # Response khác - chấp nhận nickname
                     self.nickname = nickname
-                    if not (response in ["NICKNAME_ACCEPTED", "NICKNAME_TAKEN"] or response.startswith("NICKNAME_REJECTED")):
+                    if response not in ["NICKNAME_ACCEPTED", "NICKNAME_TAKEN"] and not response.startswith("NICKNAME_REJECTED"):
                         print(MessageFormatter.format_warning_message(response))
-                    self.in_waiting_queue = False
                     return True
             else:
                 print(MessageFormatter.format_error_message('Không nhận được phản hồi từ server'))
@@ -149,6 +207,11 @@ class ChatClient:
         # Kiểm tra nếu là command
         if is_command(message):
             return self.handle_command(message)
+        
+        # Kiểm tra đã có nickname chưa
+        if not self.nickname:
+            print(MessageFormatter.format_error_message('Vui lòng đặt nickname trước khi gửi tin nhắn'))
+            return False
         
         # Content validation
         is_valid, filtered_msg, reason = validate_message_content(message)
@@ -184,7 +247,17 @@ class ChatClient:
         elif command == "quit" or command == "exit":
             return False
         elif command == "nick":
-            print(MessageFormatter.format_info_message(f"Nickname hiện tại: {self.nickname}"))
+            if self.nickname:
+                print(MessageFormatter.format_info_message(f"Nickname hiện tại: {self.nickname}"))
+            else:
+                print(MessageFormatter.format_warning_message("Chưa đặt nickname"))
+            return True
+        elif command == "setnick":
+            # Command để đặt nickname khi đã vào phòng chat
+            if self.in_chat_room:
+                self.set_nickname()
+            else:
+                print(MessageFormatter.format_error_message("Chưa vào được phòng chat"))
             return True
         else:
             print(MessageFormatter.format_warning_message(f"Command không được hỗ trợ: /{command}"))
@@ -212,21 +285,56 @@ class ChatClient:
     
     def process_received_message(self, raw_message):
         """Xử lý tin nhắn nhận được từ server"""
-        if not self.message_handler:
-            # Fallback nếu chưa có message handler
+        # NEW: Đánh dấu đã nhận được response từ server về room status
+        if not self.room_status_checked:
+            self.room_status_checked = True
+        
+        # Kiểm tra các thông báo đặc biệt về room status
+        if ("có thể vào phòng chat" in raw_message or 
+            "welcome to chat room" in raw_message.lower() or
+            "you can start chatting" in raw_message.lower()):
+            self.in_chat_room = True
+            self.in_waiting_queue = False
+            print(MessageFormatter.format_success_message('🎉 Bạn đã vào được phòng chat!'))
+            return
+        
+        if ("phòng chat đã đầy" in raw_message.lower() or 
+            "hàng chờ" in raw_message.lower() or
+            "room is full" in raw_message.lower() or
+            "queue" in raw_message.lower()):
+            self.in_waiting_queue = True
+            self.in_chat_room = False
             print(MessageFormatter.format_server_message(raw_message))
             return
         
-        # Parse message
+        # NEW: Nếu nhận được message bình thường và chưa set room status, 
+        # có thể là server cho vào thẳng phòng chat
+        if not self.room_status_checked and not self.in_chat_room and not self.in_waiting_queue:
+            # Nếu server gửi message bình thường mà không có thông báo hàng chờ
+            # thì có thể vào thẳng phòng chat
+            self.in_chat_room = True
+            self.in_waiting_queue = False
+            print(MessageFormatter.format_success_message('🎉 Được vào phòng chat ngay!'))
+        
+        # Nếu chưa có message handler và chưa vào phòng chat
+        if not self.message_handler:
+            print(MessageFormatter.format_server_message(raw_message))
+            return
+        
+        # Parse message với message handler
         msg_type, sender, content, metadata = self.message_handler.parse_message(raw_message)
         
         # Update queue status nếu cần
         if self.message_handler.should_update_queue_status(msg_type, content, metadata):
             queue_status = self.message_handler.extract_queue_status(content, metadata)
             if queue_status[0] is not None:
+                old_queue_status = self.in_waiting_queue
                 self.in_waiting_queue, queue_position = queue_status
-                if not self.in_waiting_queue:
-                    print(MessageFormatter.format_info_message('Bạn có thể bắt đầu chat! Gõ tin nhắn để bắt đầu...'))
+                
+                # Nếu vừa ra khỏi hàng chờ
+                if old_queue_status and not self.in_waiting_queue:
+                    self.in_chat_room = True
+                    print(MessageFormatter.format_info_message('🎉 Bạn có thể vào phòng chat! Hãy đặt nickname để bắt đầu chat.'))
         
         # Display message
         formatted_message = self.message_handler.format_message_for_display(msg_type, sender, content, metadata)
@@ -238,24 +346,27 @@ class ChatClient:
         if not self.is_connected:
             print(MessageFormatter.format_error_message('Chưa kết nối đến server'))
             return False
-            
-        if not self.set_nickname():
-            return False
         
-        # Bắt đầu thread nhận tin nhắn
-        self.running = True
-        receive_thread = threading.Thread(target=self.receive_messages)
-        receive_thread.daemon = True
-        receive_thread.start()
+        # NEW: Kiểm tra nếu đã ở trong phòng chat thì không cần chờ
+        if self.in_chat_room:
+            print(MessageFormatter.format_success_message('🎉 Đã vào phòng chat!'))
+        else:
+            # Chờ để có thể vào phòng chat nếu đang trong hàng chờ
+            if not self.wait_for_room_access():
+                return False
         
         # Hiển thị hướng dẫn
         UIHelper.print_chat_guide()
         
-        # Status message
-        if not self.in_waiting_queue:
-            print(MessageFormatter.format_success_message('Bạn có thể bắt đầu chat ngay!'))
-        else:
-            print(MessageFormatter.format_info_message('Đang chờ vào phòng chat...'))
+        # Thông báo có thể đặt nickname
+        if self.in_chat_room:
+            print(MessageFormatter.format_success_message('🎉 Bạn có thể đặt nickname và bắt đầu chat!'))
+        
+        # Đặt nickname ngay
+        if not self.set_nickname():
+            return False
+        
+        print(MessageFormatter.format_success_message('Bạn có thể bắt đầu chat ngay!'))
         
         # Main chat loop
         try:
@@ -265,11 +376,6 @@ class ChatClient:
                 if message.lower() in ['quit', 'exit']:
                     break
                 elif message:
-                    # Kiểm tra queue status
-                    if self.in_waiting_queue and not is_command(message):
-                        print(MessageFormatter.format_warning_message('Bạn đang trong hàng chờ. Vui lòng đợi để vào phòng chat.'))
-                        continue
-                    
                     success = self.send_message(message)
                     if not success and not is_command(message):
                         break
@@ -286,8 +392,10 @@ class ChatClient:
         print(MessageFormatter.format_info_message("Debug Info:"))
         print(f"  • Host: {self.host}:{self.port}")
         print(f"  • Connected: {self.is_connected}")
-        print(f"  • Nickname: {self.nickname}")
+        print(f"  • Room Status Checked: {self.room_status_checked}")
+        print(f"  • In Chat Room: {self.in_chat_room}")
         print(f"  • In Queue: {self.in_waiting_queue}")
+        print(f"  • Nickname: {self.nickname}")
         print(f"  • Running: {self.running}")
     
     def disconnect(self):
