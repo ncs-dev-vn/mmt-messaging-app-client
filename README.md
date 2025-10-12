@@ -123,9 +123,11 @@ Nhập nickname của bạn: YourName
 
 ```
 💬 HƯỚNG DẪN CHAT:
-  • Tin nhắn của bạn: Màu xanh dương đậm
+  • Tin nhắn của bạn: Màu xanh dương
   • Tin nhắn người khác: Màu xanh lá  
   • Thông báo server: Màu vàng
+  • Cảnh báo: Màu cam
+  • Lỗi/Từ chối: Màu đỏ
   • Gõ "/help" để xem các lệnh
   • Gõ "quit" hoặc "exit" để thoát
 ==================================================
@@ -135,23 +137,67 @@ Nhập nickname của bạn: YourName
 
 ### **4. Commands hỗ trợ**
 
-| Command | Mô tả |
-|---------|-------|
-| `/help` | Hiển thị trợ giúp |
-| `/debug` | Thông tin debug (host, nickname, status) |
-| `/nick` | Hiển thị nickname hiện tại |
-| `quit` hoặc `exit` | Thoát khỏi chat |
+| Command | Mô tả | Màu hiển thị |
+|---------|-------|-------------|
+| `/help` | Hiển thị trợ giúp | 🟡 Vàng |
+| `/debug` | Thông tin debug (host, nickname, status) | 🟡 Vàng |
+| `/nick` | Hiển thị nickname hiện tại | 🟡 Vàng |
+| `/setnick` | Đặt lại nickname | 🟡 Vàng |
+| `quit` hoặc `exit` | Thoát khỏi chat | 🟡 Vàng |
+
+**Lưu ý:** Commands luôn được hiển thị bằng màu vàng để dễ nhận biết đây là phản hồi từ hệ thống.
 
 ## 🎨 Giao diện và màu sắc
 
-### **Phân loại tin nhắn:**
+### **Hệ thống màu đơn giản (5 màu chính):**
 
-- 🔵 **Tin nhắn của bạn:** `[12:34:56] Bạn: Hello!`
-- 🟢 **Tin nhắn người khác:** `[12:34:56] Alice: Hi there!`
-- 🟡 **Thông báo server:** `🔔 [12:34:56] [THÔNG BÁO] Alice đã tham gia`
-- 🟣 **Hàng chờ:** `⏰ [12:34:56] Bạn đang ở vị trí hàng chờ: 2`
-- 🔴 **Lỗi:** `❌ Không thể kết nối đến server`
-- 🟠 **Cảnh báo:** `⚠️ Tin nhắn quá dài`
+- 🔵 **Tin nhắn của bạn (BLUE):** `[12:34:56] Bạn: Hello everyone!`
+- 🟢 **Tin nhắn người khác (GREEN):** `[12:34:56] Alice: Hi there!`
+- 🟡 **Thông báo server (YELLOW):** `[12:34:56] [SERVER] Alice đã tham gia phòng chat`
+- 🟠 **Cảnh báo (ORANGE):** `⚠️ Tin nhắn quá dài, đã cắt bớt`
+- 🔴 **Lỗi/Từ chối (RED):** `❌ Không thể kết nối đến server`
+
+### **Chi tiết phân loại màu:**
+
+#### **🔵 Màu xanh dương (Your Messages)**
+```
+[15:30:25] Bạn: Hello everyone! 👋
+[15:30:28] Bạn: How is everyone doing today?
+```
+
+#### **🟢 Màu xanh lá (Other Users)**
+```
+[15:30:26] Alice: Hi there! Welcome to the chat
+[15:30:29] Bob: Great to see new people joining
+```
+
+#### **🟡 Màu vàng (Server/Info/Success)**
+```
+✅ Đã kết nối thành công với Server (127.0.0.1:12345)
+ℹ️ Đang kiểm tra trạng thái phòng chat...
+[15:30:24] [SERVER] Alice đã tham gia phòng chat
+```
+
+#### **🟠 Màu cam (Warnings)**
+```
+⚠️ Cảnh báo: Đã lọc 1 từ không phù hợp
+⚠️ Tin nhắn quá dài, chỉ hiển thị 500 ký tự đầu
+⚠️ Đang thử kết nối lại...
+```
+
+#### **🔴 Màu đỏ (Errors/Rejected)**
+```
+❌ Nickname "admin" bị từ chối: Tên cấm
+❌ Server từ chối kết nối
+🚫 Bạn đã bị kick khỏi phòng chat
+```
+
+### **Lợi ích của color scheme mới:**
+- ✅ **Đơn giản hóa:** Chỉ 5 màu thay vì 10+ màu trước đây
+- ✅ **Dễ phân biệt:** Mỗi màu có ý nghĩa rõ ràng và nhất quán
+- ✅ **Thân thiện với mắt:** Giảm visual clutter, không gây chói mắt
+- ✅ **Accessible:** Tương thích tốt với các terminal và OS khác nhau
+- ✅ **Professional:** UI sạch sẽ và chuyên nghiệp hơn
 
 ## 🛡️ Bảo mật và Content Filter
 
@@ -166,11 +212,11 @@ Nhập nickname của bạn: YourName
 - **Length Control:** Giới hạn độ dài tin nhắn
 - **Link Blocking:** Chặn URLs không mong muốn
 
-### **Ví dụ filtering:**
-```
+### **Ví dụ filtering với màu mới:**
+```bash
 > This is a damn good message
-⚠️ Cảnh báo: Đã lọc 1 từ không phù hợp
-[12:34:56] Bạn: This is a **** good message
+⚠️ Cảnh báo: Đã lọc 1 từ không phù hợp        # ORANGE - Warning
+[12:34:56] Bạn: This is a **** good message   # BLUE - Your message
 ```
 
 ## 🌐 Network Discovery

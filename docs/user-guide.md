@@ -41,40 +41,106 @@ python main.py
 | `/help` | Hiển thị danh sách commands |
 | `/debug` | Hiển thị thông tin debug |
 | `/nick` | Hiển thị nickname hiện tại |
+| `/setnick` | Đặt lại nickname |
 | `quit` hoặc `exit` | Thoát khỏi chat |
 
-## 🎨 Giao diện
+## 🎨 Giao diện - Hệ thống 5 màu đơn giản
 
-### Màu sắc tin nhắn
-- 🔵 **Xanh dương đậm**: Tin nhắn của bạn
-- 🟢 **Xanh lá**: Tin nhắn của người khác  
-- 🟡 **Vàng**: Thông báo server
-- 🔴 **Đỏ**: Thông báo lỗi
-- 🟠 **Cam**: Cảnh báo
+### **Màu sắc tin nhắn**
 
-### Thông tin hiển thị
-- **Timestamp**: `[HH:MM:SS]` cho mọi tin nhắn
-- **Sender**: Tên người gửi
-- **Queue status**: Vị trí hàng chờ (nếu phòng đầy)
+#### **🔵 Xanh dương - Tin nhắn của bạn**
+```
+[15:30:25] Bạn: Hello everyone! 👋
+[15:30:28] Bạn: How is everyone doing today?
+```
+**Sử dụng:** Tất cả tin nhắn bạn gửi trong chat
+
+#### **🟢 Xanh lá - Tin nhắn người khác**
+```
+[15:30:26] Alice: Hi there! Welcome!
+[15:30:29] Bob: Great to see new people
+[15:30:31] Charlie: How's everyone doing?
+```
+**Sử dụng:** Tin nhắn từ các thành viên khác trong chat
+
+#### **🟡 Vàng - Server/System Messages**
+```
+✅ Đã kết nối thành công với Server (127.0.0.1:12345)
+ℹ️ Đang kiểm tra trạng thái phòng chat...
+✅ Nickname "Alice" đã được chấp nhận!
+[15:30:24] [SERVER] Bob đã tham gia phòng chat
+[15:30:35] [SERVER] Charlie đã rời phòng chat
+```
+**Sử dụng:** 
+- Thông báo kết nối/ngắt kết nối
+- Thông báo server 
+- Phản hồi commands
+- Success messages
+
+#### **🟠 Cam - Cảnh báo (Warnings)**
+```
+⚠️ Cảnh báo: Đã lọc 1 từ không phù hợp
+⚠️ Tin nhắn quá dài, chỉ hiển thị 500 ký tự đầu
+⚠️ Kết nối không ổn định, đang thử kết nối lại...
+⚠️ Timeout khi chờ phản hồi từ server
+```
+**Sử dụng:**
+- Content filtering warnings
+- Network warnings
+- Performance warnings
+- Non-critical issues
+
+#### **🔴 Đỏ - Lỗi/Từ chối (Errors/Rejected)**
+```
+❌ Nickname "admin" bị từ chối: Tên cấm
+❌ Server từ chối kết nối. Kiểm tra server có đang chạy không?
+🚫 Tin nhắn bị từ chối: Chứa nội dung không phù hợp
+❌ Không thể gửi tin nhắn: Mất kết nối
+🚫 Bạn đã bị kick khỏi phòng chat
+```
+**Sử dụng:**
+- Connection errors
+- Validation failures
+- Rejected messages/nicknames
+- Critical system errors
+
+### **Thông tin hiển thị**
+- **Timestamp**: `[HH:MM:SS]` cho mọi tin nhắn chat
+- **Sender**: Tên người gửi (cho tin nhắn người khác)
+- **You indicator**: "Bạn:" cho tin nhắn của bạn
 
 ## 🔄 Queue System
 
 ### Khi phòng chat đầy
 1. Bạn sẽ vào hàng chờ
-2. Hiển thị vị trí hàng chờ
+2. Hiển thị vị trí hàng chờ (màu vàng)
 3. Không thể gửi tin nhắn (chỉ xem)
 4. Khi có chỗ trống, tự động vào phòng
 
-### Thông báo queue
-- `⏰ Đang chờ vào phòng chat... Vị trí hàng chờ: X`
-- `✅ Bạn hiện đã kết nối với chat!`
+### Thông báo queue (màu vàng)
+```
+⏰ Đang chờ vào phòng chat... Vị trí hàng chờ: 3
+⏰ Vị trí hàng chờ hiện tại: 2
+✅ Bạn hiện đã kết nối với chat!
+```
 
 ## 🛡️ Content Filtering
 
 ### Tự động lọc
-- **Profanity**: Từ ngữ không phù hợp được thay bằng `***`
-- **Spam**: Ký tự lặp lại, chữ in hoa quá mức
-- **Links**: URLs bị chặn để tránh spam
+- **Profanity**: Từ ngữ không phù hợp được thay bằng `***` + cảnh báo màu cam
+- **Spam**: Ký tự lặp lại, chữ in hoa quá mức + cảnh báo màu cam  
+- **Links**: URLs bị chặn + lỗi màu đỏ
+
+### Ví dụ filtering
+```bash
+# Input
+> This is damn good, but HELLLLOOOO there!!!
+
+# Output
+⚠️ Cảnh báo: Đã lọc 1 từ không phù hợp              # Cam - Warning
+⚠️ Cảnh báo: Đã giảm spam (ký tự lặp và chữ hoa)    # Cam - Warning  
+[15:45:12] Bạn: This is **** good, but Hello there!  # Xanh dương - Your message
+```
 
 ### Giới hạn
 - **Nickname**: Tối đa 20 ký tự
@@ -82,16 +148,24 @@ python main.py
 
 ## ⚠️ Lưu ý
 
+### Color Scheme Benefits
+- **Đơn giản**: Chỉ 5 màu dễ nhớ thay vì nhiều màu rối mắt
+- **Nhất quán**: Cùng logic màu trong toàn bộ ứng dụng
+- **Professional**: Giao diện sạch sẽ và chuyên nghiệp
+- **Accessible**: Tương thích tốt với mọi terminal
+
 ### Best Practices
 - Sử dụng nickname có ý nghĩa
 - Tránh spam tin nhắn
 - Tôn trọng người dùng khác
 - Không chia sẻ thông tin cá nhân
 
-### Troubleshooting
-- Nếu mất kết nối: Ứng dụng sẽ tự động thông báo
-- Nếu nickname bị từ chối: Thử nickname khác
-- Nếu không thể gửi tin nhắn: Kiểm tra có đang trong queue không
+### Terminal Compatibility
+- **Recommended terminals**:
+  - macOS: Terminal.app, iTerm2
+  - Windows: Windows Terminal, PowerShell 
+  - Linux: Most modern terminals
+- **Fallback**: Nếu không hỗ trợ màu, sẽ hiển thị text thuần
 
 ## 🚪 Thoát ứng dụng
 

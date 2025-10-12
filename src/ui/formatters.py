@@ -1,84 +1,98 @@
 """
-Message formatters cho các loại tin nhắn khác nhau
+Simplified Message Formatters - Only 5 color categories
 """
 
 from datetime import datetime
-from ui.colors import Colors  # Thay đổi từ .colors thành ui.colors
+from ui.colors import blue, green, yellow, red, orange, bold
 
 class MessageFormatter:
-    """Formatter cho các loại tin nhắn khác nhau"""
+    """Simplified message formatter with 5 colors only"""
     
     @staticmethod
     def get_timestamp():
-        """Lấy timestamp hiện tại"""
-        return datetime.now().strftime("%H:%M:%S")
+        """Get current timestamp"""
+        return datetime.now().strftime("[%H:%M:%S]")
     
-    @staticmethod
-    def format_own_message(nickname, message, timestamp=None):
-        """Format tin nhắn của chính mình"""
-        if not timestamp:
-            timestamp = MessageFormatter.get_timestamp()
-        if Colors.is_supported():
-            return f"{Colors.CYAN}{Colors.BOLD}[{timestamp}] Bạn:{Colors.RESET} {Colors.WHITE}{message}{Colors.RESET}"
-        else:
-            return f"[{timestamp}] Bạn: {message}"
+    # === YOUR MESSAGES (BLUE) ===
+    @staticmethod  
+    def format_own_message(nickname, message):
+        """Your messages - BLUE"""
+        timestamp = MessageFormatter.get_timestamp()
+        return blue(f"{timestamp} Bạn: {message}")
     
+    # === OTHER USERS (GREEN) ===
     @staticmethod
-    def format_other_message(sender, message, timestamp=None):
-        """Format tin nhắn của người khác"""
-        if not timestamp:
-            timestamp = MessageFormatter.get_timestamp()
-        if Colors.is_supported():
-            return f"{Colors.GREEN}[{timestamp}] {sender}:{Colors.RESET} {message}"
-        else:
-            return f"[{timestamp}] {sender}: {message}"
+    def format_other_message(sender, message):
+        """Other users' messages - GREEN"""
+        timestamp = MessageFormatter.get_timestamp()
+        return green(f"{timestamp} {sender}: {message}")
     
+    # === SERVER MESSAGES (YELLOW) ===
     @staticmethod
-    def format_server_message(message, timestamp=None):
-        """Format thông báo từ server"""
-        if not timestamp:
-            timestamp = MessageFormatter.get_timestamp()
-            
-        if not Colors.is_supported():
-            return f"[{timestamp}] SERVER: {message}"
-            
-        if "[THÔNG BÁO]" in message:
-            return f"{Colors.YELLOW}{Colors.BOLD}🔔 [{timestamp}] {message}{Colors.RESET}"
-        elif "⏰" in message or "hàng chờ" in message:
-            return f"{Colors.MAGENTA}⏰ [{timestamp}] {message}{Colors.RESET}"
-        elif "✅" in message or "kết nối" in message:
-            return f"{Colors.GREEN}{Colors.BOLD}✅ [{timestamp}] {message}{Colors.RESET}"
-        else:
-            return f"{Colors.GRAY}📢 [{timestamp}] {message}{Colors.RESET}"
-    
-    @staticmethod
-    def format_error_message(message):
-        """Format thông báo lỗi"""
-        if Colors.is_supported():
-            return f"{Colors.RED}❌ {message}{Colors.RESET}"
-        else:
-            return f"ERROR: {message}"
-    
-    @staticmethod
-    def format_warning_message(message):
-        """Format thông báo cảnh báo"""
-        if Colors.is_supported():
-            return f"{Colors.YELLOW}⚠️ {message}{Colors.RESET}"
-        else:
-            return f"WARNING: {message}"
-    
-    @staticmethod
-    def format_success_message(message):
-        """Format thông báo thành công"""
-        if Colors.is_supported():
-            return f"{Colors.GREEN}✅ {message}{Colors.RESET}"
-        else:
-            return f"SUCCESS: {message}"
+    def format_server_message(message):
+        """Server notifications - YELLOW"""
+        timestamp = MessageFormatter.get_timestamp()
+        return yellow(f"{timestamp} [SERVER] {message}")
     
     @staticmethod
     def format_info_message(message):
-        """Format thông báo thông tin"""
-        if Colors.is_supported():
-            return f"{Colors.CYAN}ℹ️ {message}{Colors.RESET}"
+        """Info messages - YELLOW"""
+        return yellow(f"ℹ️  {message}")
+    
+    @staticmethod
+    def format_success_message(message):
+        """Success messages - YELLOW"""
+        return yellow(f"✅ {message}")
+    
+    # === WARNINGS (ORANGE) ===
+    @staticmethod
+    def format_warning_message(message):
+        """Warning messages - ORANGE"""
+        return orange(f"⚠️  {message}")
+    
+    # === ERRORS/REJECTED (RED) ===
+    @staticmethod
+    def format_error_message(message):
+        """Error messages - RED"""
+        return red(f"❌ {message}")
+    
+    @staticmethod
+    def format_rejected_message(message):
+        """Rejected messages - RED"""
+        return red(f"🚫 {message}")
+    
+    # === UNIFIED MESSAGE PROCESSING ===
+    @staticmethod
+    def format_message_by_type(msg_type, sender, content, is_own_message=False):
+        """
+        Unified message formatting based on type
+        
+        Args:
+            msg_type: 'user', 'server', 'system', 'error', 'warning'
+            sender: Username or system identifier
+            content: Message content
+            is_own_message: Whether this is user's own message
+        """
+        if msg_type == 'user':
+            if is_own_message:
+                return MessageFormatter.format_own_message(sender, content)
+            else:
+                return MessageFormatter.format_other_message(sender, content)
+        
+        elif msg_type == 'server' or msg_type == 'system':
+            return MessageFormatter.format_server_message(content)
+        
+        elif msg_type == 'error' or msg_type == 'rejected':
+            return MessageFormatter.format_error_message(content)
+        
+        elif msg_type == 'warning':
+            return MessageFormatter.format_warning_message(content)
+        
         else:
-            return f"INFO: {message}"
+            # Fallback
+            return MessageFormatter.format_server_message(f"{sender}: {content}")
+
+# Backward compatibility - map old method names
+MessageFormatter.format_notification_message = MessageFormatter.format_server_message
+MessageFormatter.format_queue_message = MessageFormatter.format_server_message
+MessageFormatter.format_system_message = MessageFormatter.format_server_message
