@@ -14,7 +14,7 @@ def supports_color():
     )
 
 class Colors:
-    """Simplified color palette - only 5 main colors"""
+    """Simplified color palette"""
     
     if supports_color():
         # Main colors only
@@ -24,13 +24,19 @@ class Colors:
         RED = '\033[31m'         # Errors/Rejected (từ chối)
         ORANGE = '\033[93m'      # Warnings (cảnh báo)
         
-        # System
+        # === TERMINAL CONTROL CODES ===
+        CURSOR_UP = '\033[1A'        # Move cursor up 1 line
+        CLEAR_LINE = '\033[K'        # Clear from cursor to end of line
+        CLEAR_ENTIRE_LINE = '\033[2K' # Clear entire line
+        CURSOR_TO_START = '\033[G'    # Move cursor to start of line
+        
         RESET = '\033[0m'
         BOLD = '\033[1m'
     else:
         # No color support
         BLUE = GREEN = YELLOW = RED = ORANGE = ''
         RESET = BOLD = ''
+        CURSOR_UP = CLEAR_LINE = CLEAR_ENTIRE_LINE = CURSOR_TO_START = ''
 
 # Color functions - simplified
 def blue(text):
@@ -64,3 +70,11 @@ def white(text): return text            # Plain text
 def gray(text): return text             # Plain text
 def light_blue(text): return blue(text) # Your messages
 def light_green(text): return green(text) # Other messages
+
+# === TERMINAL CONTROL FUNCTIONS ===
+
+def clear_input_line():
+    """Clear the line where user just typed input"""
+    if supports_color():
+        # Move up one line, clear it completely, but don't move cursor back down
+        print(f"{Colors.CURSOR_UP}{Colors.CLEAR_ENTIRE_LINE}", end='', flush=True)

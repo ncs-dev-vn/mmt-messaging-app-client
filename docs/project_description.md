@@ -23,20 +23,38 @@ Phát triển một ứng dụng chat **đơn giản**, **hiệu quả**, và **
 ### 📁 Cấu Trúc Thư Mục
 ```
 mmt-messaging-app-client/
-├── run_client.py              # Entry point chính
-├── src/
-│   └── chat_client.py         # Core chat client logic
-├── config/
-│   └── __init__.py           # Network discovery & configuration  
-├── utils/
-│   └── __init__.py           # Content moderation system
-├── docs/                     # Tài liệu dự án
-│   ├── huong-dan-nguoi-dung.md
-│   ├── mo-ta-du-an.md
-│   ├── ky-thuat-chi-tiet.md
-│   └── giao-thuc-chat.md
-└── README.md                 # Hướng dẫn tổng quan (Vietnamese)
+├── main.py                   
+├── README.md                  
+├── src/                       
+│   ├── __init__.py         
+│   ├── client/            
+│   │   ├── __init__.py       
+│   │   ├── chat_client.py    
+│   │   └── message_handler.py
+│   ├── config/              
+│   │   ├── __init__.py      
+│   │   ├── settings.py      
+│   │   └── network_scanner.py 
+│   ├── ui/                 
+│   │   ├── __init__.py    
+│   │   ├── colors.py       
+│   │   ├── formatters.py    
+│   │   └── ui_helpers.py    
+│   └── utils/               
+│       ├── __init__.py     
+│       ├── validators.py     
+│       └── content_filter.py 
+├── docs/                     
+│   ├── project_description.md 
+│   ├── INSTALLATION.md     
+│   ├── user-guide.md  
+│   └── technical-details.md  
+├── .gitignore              
+├── .vscode/                 
+│   └── settings.json      
+└── requirements.txt       
 ```
+
 
 ### 🔧 Công Nghệ Sử Dụng
 
@@ -344,9 +362,6 @@ test_scan_network()
 
 ## 📄 Tài Liệu Tham Khảo
 
-- [Hướng Dẫn Người Dùng](./huong-dan-nguoi-dung.md) - Chi tiết cách sử dụng
-- [Kỹ Thuật Chi Tiết](./ky-thuat-chi-tiet.md) - Documentation cho developers  
-- [Giao Thức Chat](./giao-thuc-chat.md) - Specification của chat protocol
 - [README.md](../README.md) - Hướng dẫn quick start
 
 ---

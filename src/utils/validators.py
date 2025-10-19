@@ -8,32 +8,29 @@ from config.settings import MAX_NICKNAME_LENGTH, MAX_MESSAGE_LENGTH  # Thay đ�
 
 def validate_nickname(nickname):
     """
-    Validate nickname theo các quy tắc:
-    - Độ dài từ 1 đến MAX_NICKNAME_LENGTH ký tự
-    - Chỉ chứa chữ cái, số, dấu gạch dưới và dấu gạch ngang
-    - Không bắt đầu hoặc kết thúc bằng ký tự đặc biệt
+    Validate nickname - simplified rules:
+    - 2-20 ký tự
+    - Chỉ chữ cái, số, _, -
+    - Không toàn bộ là ký tự đặc biệt
     """
     if not nickname:
         return False, "Nickname không được để trống"
     
-    if len(nickname) > MAX_NICKNAME_LENGTH:
-        return False, f"Nickname không được vượt quá {MAX_NICKNAME_LENGTH} ký tự"
+    if len(nickname) < 2 or len(nickname) > 20:
+        return False, "Nickname phải từ 2-20 ký tự"
     
-    if len(nickname) < 1:
-        return False, "Nickname phải có ít nhất 1 ký tự"
-    
-    # Kiểm tra ký tự hợp lệ (chữ cái, số, _, -)
+    # Check allowed characters
     if not re.match(r'^[a-zA-Z0-9_-]+$', nickname):
-        return False, "Nickname chỉ được chứa chữ cái, số, dấu gạch dưới (_) và dấu gạch ngang (-)"
+        return False, "Nickname chỉ được chứa chữ cái, số, _, -"
     
-    # Không được bắt đầu hoặc kết thúc bằng ký tự đặc biệt
-    if nickname.startswith(('_', '-')) or nickname.endswith(('_', '-')):
-        return False, "Nickname không được bắt đầu hoặc kết thúc bằng dấu gạch dưới hoặc gạch ngang"
+    # Must contain at least one alphanumeric character
+    if not re.search(r'[a-zA-Z0-9]', nickname):
+        return False, "Nickname phải chứa ít nhất một chữ cái hoặc số"
     
-    # Kiểm tra từ cấm
-    forbidden_names = ['admin', 'server', 'system', 'bot', 'null', 'undefined']
-    if nickname.lower() in forbidden_names:
-        return False, f"Nickname '{nickname}' không được phép sử dụng"
+    # Kiểm tra banned nicknames
+    banned_names = ['admin', 'server', 'system', 'bot', 'null', 'undefined']
+    if nickname.lower() in banned_names:
+        return False, f"Nickname '{nickname}' bị cấm sử dụng"
     
     return True, "OK"
 

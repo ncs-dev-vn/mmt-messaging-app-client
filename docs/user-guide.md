@@ -85,10 +85,10 @@ python main.py
 ⚠️ Timeout khi chờ phản hồi từ server
 ```
 **Sử dụng:**
-- Content filtering warnings
-- Network warnings
-- Performance warnings
-- Non-critical issues
+ - Cảnh báo lọc nội dung
+ - Cảnh báo mạng
+ - Cảnh báo hiệu suất
+ - Sự cố không nghiêm trọng
 
 #### **🔴 Đỏ - Lỗi/Từ chối (Errors/Rejected)**
 ```

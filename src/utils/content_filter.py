@@ -7,9 +7,7 @@ from utils.validators import validate_message_length  # Thay đổi từ .valida
 
 # Danh sách từ cấm cơ bản (có thể mở rộng)
 PROFANITY_LIST = [
-    # Basic profanity
     'spam', 'fuck', 'shit', 'damn', 'bitch', 'ass',
-    # Vietnamese profanity (mild examples)
     'đéo', 'dmm', 'vcl', 'clmm', 'đm', 'vl'
 ]
 

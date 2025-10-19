@@ -10,6 +10,7 @@ DEFAULT_PORT = 12345
 DEFAULT_BUFFER_SIZE = 1024
 DEFAULT_TIMEOUT = 30
 MAX_NICKNAME_LENGTH = 20
+MIN_NICKNAME_LENGTH = 2 
 MAX_MESSAGE_LENGTH = 500
 
 def get_server_info_from_user():
@@ -76,9 +77,9 @@ def get_buffer_size():
     return DEFAULT_BUFFER_SIZE
 
 def get_max_nickname_length():
-    """Get max nickname length"""
+    """Lấy độ dài tối đa của nickname"""
     return MAX_NICKNAME_LENGTH
 
-def get_max_message_length():
-    """Get maximum message length"""
-    return MAX_MESSAGE_LENGTH
+def get_min_nickname_length():
+    """Lấy độ dài tối thiểu của nickname"""
+    return MIN_NICKNAME_LENGTH

@@ -383,13 +383,15 @@ class ChatClient:
             while self.running and self.is_connected:
                 message = input(UIHelper.get_colored_prompt()).strip()
                 
+                print('\033[1A\033[2K', end='', flush=True) 
+                
                 if message.lower() in ['quit', 'exit']:
                     break
                 elif message:
                     success = self.send_message(message)
                     if not success and not is_command(message):
                         break
-                        
+                
         except KeyboardInterrupt:
             print(MessageFormatter.format_info_message('Đang thoát...'))
         finally:
@@ -429,3 +431,5 @@ class ChatClient:
                 self.client_socket = None
         
         print(MessageFormatter.format_success_message('Đã ngắt kết nối'))
+    
+  
