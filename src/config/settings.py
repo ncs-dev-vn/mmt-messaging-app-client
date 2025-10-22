@@ -4,14 +4,14 @@ Configuration settings cho chat client
 
 from config.network_scanner import auto_discover_servers  # Thay đổi từ .network_scanner
 
-# Default values
-DEFAULT_HOST = '127.0.0.1'
+# === DEFAULT CONFIGURATIONS ===
+DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 12345
 DEFAULT_BUFFER_SIZE = 1024
-DEFAULT_TIMEOUT = 30
+DEFAULT_TIMEOUT = 10
 MAX_NICKNAME_LENGTH = 20
-MIN_NICKNAME_LENGTH = 2 
-MAX_MESSAGE_LENGTH = 500
+MIN_NICKNAME_LENGTH = 2  
+MAX_MESSAGE_LENGTH = 500  
 
 def get_server_info_from_user():
     """Get server information from user input with auto-discovery option"""
@@ -65,15 +65,15 @@ def get_server_info_from_user():
     return host, port
 
 def get_default_server_info():
-    """Get default server information"""
+    """Lấy thông tin server mặc định"""
     return DEFAULT_HOST, DEFAULT_PORT
 
 def get_connection_timeout():
-    """Get connection timeout"""
+    """Lấy thời gian chờ kết nối"""
     return DEFAULT_TIMEOUT
 
 def get_buffer_size():
-    """Get buffer size"""
+    """Lấy kích thước buffer cho socket communication"""
     return DEFAULT_BUFFER_SIZE
 
 def get_max_nickname_length():
@@ -83,3 +83,7 @@ def get_max_nickname_length():
 def get_min_nickname_length():
     """Lấy độ dài tối thiểu của nickname"""
     return MIN_NICKNAME_LENGTH
+
+def get_max_message_length():
+    """Lấy độ dài tối đa của message"""
+    return MAX_MESSAGE_LENGTH

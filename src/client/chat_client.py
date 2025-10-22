@@ -33,7 +33,7 @@ class ChatClient:
         self.in_chat_room = False
         self.room_status_checked = False
         
-        # NEW: Variables để handle nickname response
+        # Variables để handle nickname response
         self.waiting_for_nickname_response = False
         self.nickname_response = None
         self.nickname_response_lock = threading.Lock()
@@ -67,6 +67,27 @@ class ChatClient:
         except Exception as e:
             print(MessageFormatter.format_error_message(f'Lỗi kết nối: {e}'))
             return False
+    
+    def disconnect(self):
+        """Ngắt kết nối an toàn"""
+        self.running = False
+        self.is_connected = False
+        
+        if self.client_socket:
+            try:
+                # Gửi quit command
+                quit_command = "/quit"
+                self.client_socket.send(quit_command.encode('utf-8'))
+            except:
+                pass
+            finally:
+                try:
+                    self.client_socket.close()
+                except:
+                    pass
+                self.client_socket = None
+        
+        print(MessageFormatter.format_success_message('Đã ngắt kết nối'))
     
     def check_initial_room_status(self):
         """Kiểm tra trạng thái phòng chat ngay sau khi kết nối"""
@@ -133,7 +154,7 @@ class ChatClient:
                     print(MessageFormatter.format_error_message(message))
                     continue
                 
-                # NEW: Set flag chờ nickname response
+                # Set flag chờ nickname response
                 with self.nickname_response_lock:
                     self.waiting_for_nickname_response = True
                     self.nickname_response = None
@@ -234,34 +255,6 @@ class ChatClient:
             self.is_connected = False
             return False
     
-    def handle_command(self, message):
-        """Xử lý các commands"""
-        command, args = parse_command(message)
-        
-        if command == "help":
-            UIHelper.print_help()
-            return True
-        elif command == "debug":
-            self.debug_status()
-            return True
-        elif command == "quit" or command == "exit":
-            return False
-        elif command == "nick":
-            if self.nickname:
-                print(MessageFormatter.format_info_message(f"Nickname hiện tại: {self.nickname}"))
-            else:
-                print(MessageFormatter.format_warning_message("Chưa đặt nickname"))
-            return True
-        elif command == "setnick":
-            if self.in_chat_room:
-                self.set_nickname()
-            else:
-                print(MessageFormatter.format_error_message("Chưa vào được phòng chat"))
-            return True
-        else:
-            print(MessageFormatter.format_warning_message(f"Command không được hỗ trợ: /{command}"))
-            return True
-    
     def receive_messages(self):
         """Nhận tin nhắn từ server (chạy trong thread)"""
         while self.running and self.is_connected:
@@ -288,7 +281,7 @@ class ChatClient:
         if not self.room_status_checked:
             self.room_status_checked = True
         
-        # NEW: Xử lý nickname response trước tiên
+        # Xử lý nickname response trước tiên
         with self.nickname_response_lock:
             if self.waiting_for_nickname_response:
                 # Kiểm tra xem có phải nickname response không
@@ -302,9 +295,9 @@ class ChatClient:
         if ("có thể vào phòng chat" in raw_message or 
             "welcome to chat room" in raw_message.lower() or
             "you can start chatting" in raw_message.lower() or
-            "hiện đã kết nối với chat" in raw_message or  # NEW: Thêm pattern này
-            "đã kết nối với chat" in raw_message.lower() or  # NEW: Thêm pattern này
-            "connected to chat" in raw_message.lower()):  # NEW: English version
+            "hiện đã kết nối với chat" in raw_message or
+            "đã kết nối với chat" in raw_message.lower() or
+            "connected to chat" in raw_message.lower()):
             self.in_chat_room = True
             self.in_waiting_queue = False
             print(MessageFormatter.format_success_message('🎉 Bạn đã vào được phòng chat!'))
@@ -351,6 +344,34 @@ class ChatClient:
         if formatted_message:
             print(formatted_message)
     
+    def handle_command(self, message):
+        """Xử lý các commands"""
+        command, args = parse_command(message)
+        
+        if command == "help":
+            UIHelper.print_help()
+            return True
+        elif command == "debug":
+            self.debug_status()
+            return True
+        elif command == "quit" or command == "exit":
+            return False
+        elif command == "nick":
+            if self.nickname:
+                print(MessageFormatter.format_info_message(f"Nickname hiện tại: {self.nickname}"))
+            else:
+                print(MessageFormatter.format_warning_message("Chưa đặt nickname"))
+            return True
+        elif command == "setnick":
+            if self.in_chat_room:
+                self.set_nickname()
+            else:
+                print(MessageFormatter.format_error_message("Chưa vào được phòng chat"))
+            return True
+        else:
+            print(MessageFormatter.format_warning_message(f"Command không được hỗ trợ: /{command}"))
+            return True
+    
     def start_chat(self):
         """Bắt đầu chat session"""
         if not self.is_connected:
@@ -383,6 +404,7 @@ class ChatClient:
             while self.running and self.is_connected:
                 message = input(UIHelper.get_colored_prompt()).strip()
                 
+                # Clear input line after user presses Enter
                 print('\033[1A\033[2K', end='', flush=True) 
                 
                 if message.lower() in ['quit', 'exit']:
@@ -410,26 +432,4 @@ class ChatClient:
         print(f"  • Nickname: {self.nickname}")
         print(f"  • Running: {self.running}")
         print(f"  • Waiting for nickname: {self.waiting_for_nickname_response}")
-    
-    def disconnect(self):
-        """Ngắt kết nối an toàn"""
-        self.running = False
-        self.is_connected = False
-        
-        if self.client_socket:
-            try:
-                # Gửi quit command
-                quit_command = "/quit"
-                self.client_socket.send(quit_command.encode('utf-8'))
-            except:
-                pass
-            finally:
-                try:
-                    self.client_socket.close()
-                except:
-                    pass
-                self.client_socket = None
-        
-        print(MessageFormatter.format_success_message('Đã ngắt kết nối'))
-    
-  
+

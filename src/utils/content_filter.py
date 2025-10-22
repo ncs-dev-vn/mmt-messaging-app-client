@@ -8,15 +8,15 @@ from utils.validators import validate_message_length  # Thay đổi từ .valida
 # Danh sách từ cấm cơ bản (có thể mở rộng)
 PROFANITY_LIST = [
     'spam', 'fuck', 'shit', 'damn', 'bitch', 'ass',
-    'đéo', 'dmm', 'vcl', 'clmm', 'đm', 'vl'
+    'đéo', 'dmm', 'vcl', 'clmm', 'đm', 'vl', 'dm'
 ]
 
 # Pattern cho các loại content không mong muốn
 SPAM_PATTERNS = [
-    r'(.)\1{10,}',  # Lặp lại ký tự > 10 lần
-    r'[A-Z]{20,}',  # Chữ in hoa liên tiếp > 20 ký tự
-    r'(http|https|www\.)',  # Links
-    r'(\d+[\s-]*){10,}',  # Nhiều số liên tiếp
+    r'(.)\1{10,}',  
+    r'[A-Z]{20,}',  
+    r'(http|https|www\.)', 
+    r'(\d+[\s-]*){10,}', 
 ]
 
 def filter_profanity(text):

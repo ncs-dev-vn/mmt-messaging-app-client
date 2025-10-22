@@ -9,16 +9,16 @@ from config.settings import MAX_NICKNAME_LENGTH, MAX_MESSAGE_LENGTH  # Thay đ�
 def validate_nickname(nickname):
     """
     Validate nickname - simplified rules:
-    - 2-20 ký tự
+    - 3-20 ký tự
     - Chỉ chữ cái, số, _, -
     - Không toàn bộ là ký tự đặc biệt
     """
     if not nickname:
         return False, "Nickname không được để trống"
     
-    if len(nickname) < 2 or len(nickname) > 20:
-        return False, "Nickname phải từ 2-20 ký tự"
-    
+    if len(nickname) < 3 or len(nickname) > 20:
+        return False, "Nickname phải từ 3-20 ký tự"
+
     # Check allowed characters
     if not re.match(r'^[a-zA-Z0-9_-]+$', nickname):
         return False, "Nickname chỉ được chứa chữ cái, số, _, -"
