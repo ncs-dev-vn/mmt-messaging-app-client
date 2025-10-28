@@ -368,6 +368,14 @@ class ChatClient:
             else:
                 print(MessageFormatter.format_error_message("Chưa vào được phòng chat"))
             return True
+        elif command == "users":
+            # Gửi command users đến server để lấy danh sách
+            try:
+                self.client_socket.send("/users".encode('utf-8'))
+                print(MessageFormatter.format_info_message("Đang lấy danh sách người dùng hoạt động..."))
+            except Exception as e:
+                print(MessageFormatter.format_error_message(f'Không thể gửi lệnh users: {e}'))
+            return True
         else:
             print(MessageFormatter.format_warning_message(f"Command không được hỗ trợ: /{command}"))
             return True
