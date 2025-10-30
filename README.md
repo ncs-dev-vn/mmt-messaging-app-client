@@ -321,11 +321,6 @@ Có thể chỉnh sửa trong `src/config/settings.py`
 - 🔄 User profiles
 - 🔄 Emoticons support
 
-## 📞 Support
-
-- **Issues:** Tạo issue trên GitHub
-- **Questions:** Contact qua email
-- **Documentation:** Xem thêm trong `/docs`
 
 ## 📄 License
 
